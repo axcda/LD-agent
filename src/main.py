@@ -1,13 +1,13 @@
-from multimodal_agent import (
-    run_multimodal_analysis, 
-    analyze_url, 
-    analyze_image, 
-    analyze_code, 
+from src.core.multimodal_agent import (
+    run_multimodal_analysis,
+    analyze_url,
+    analyze_image,
+    analyze_code,
     analyze_text,
     create_analysis_request
 )
-from graph.state import ContentType
-from config import config
+from src.graph.state import ContentType
+from src.config import config
 
 
 def demo_basic_workflow():

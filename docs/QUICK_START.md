@@ -44,6 +44,35 @@ curl -X POST http://localhost:8888/analyze/batch \
   }'
 ```
 
+### 论坛数据处理
+
+```bash
+# 处理用户提供的JSON格式论坛数据
+curl -X POST http://localhost:8888/analyze/forum \
+  -H "Content-Type: application/json" \
+  -d '{
+    "forum_data": {
+      "url": "https://example.com/forum/topic",
+      "timestamp": "2025-07-22T14:14:27.271Z",
+      "topicTitle": "论坛主题",
+      "totalPosts": 20,
+      "posts": [
+        {
+          "postId": "post_1",
+          "username": "用户名",
+          "time": "2 天",
+          "content": {
+            "text": "帖子内容",
+            "images": [],
+            "codeBlocks": [],
+            "links": []
+          }
+        }
+      ]
+    }
+  }'
+```
+
 ## 🐍 Python客户端
 
 ```python
@@ -108,6 +137,39 @@ print(result)
 - `image`: 图片内容分析  
 - `code`: 代码块分析
 - `text`: 文本总结分析
+- `forum`: 论坛数据处理
+
+## 📁 论坛数据处理
+
+项目提供了一个论坛数据适配器，可以处理用户提供的 JSON 格式数据，并将其转换为项目内部使用的格式。
+
+### 命令行工具
+
+```bash
+# 处理用户提供的JSON格式论坛数据
+uv run python scripts/process_user_forum_data.py input.json -o output.json --analyze
+
+# 运行论坛数据适配器示例
+uv run python examples/forum_data_adapter_example.py
+```
+
+### Python代码中使用
+
+```python
+from src.utils.forum_data_adapter import (
+    ForumDataAdapter,
+    convert_user_forum_data,
+    load_forum_data_from_json
+)
+from src.analyzers.forum_analyzer import ForumAnalyzer
+
+# 加载并转换用户数据
+forum_data = load_forum_data_from_json("user_forum_data.json")
+
+# 使用论坛分析器分析数据
+analyzer = ForumAnalyzer()
+analysis_result = analyzer.analyze_forum(forum_data)
+```
 
 ## ⚙️ 配置
 
@@ -122,3 +184,4 @@ ALIBABA_API_KEY=your_alibaba_key
 ## 📖 完整文档
 
 详细的API文档请参考 `API_DOCS.md`
+完整的论坛数据适配器使用指南请参考 `FORUM_DATA_ADAPTER.md`

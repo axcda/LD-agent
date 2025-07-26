@@ -6,6 +6,7 @@
 
 import json
 import requests
+import os
 
 
 def test_api_connection():
@@ -52,7 +53,7 @@ def test_simple_analysis():
 def test_forum_data_loading():
     """测试论坛数据加载"""
     try:
-        with open("sample_forum_data.json", 'r', encoding='utf-8') as f:
+        with open(os.path.join(os.path.dirname(__file__), "..", "examples", "sample_data", "sample_forum_data.json"), 'r', encoding='utf-8') as f:
             data = json.load(f)
         
         print(f"✅ 成功加载论坛数据")

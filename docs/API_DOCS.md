@@ -21,10 +21,11 @@ GET /
   "endpoints": {
     "POST /analyze": "分析单个内容",
     "POST /analyze/batch": "批量分析多个内容",
+    "POST /analyze/forum": "分析论坛数据",
     "GET /health": "健康检查",
     "GET /config/status": "API配置状态"
   },
-  "supported_types": ["url", "image", "code", "text"]
+  "supported_types": ["url", "image", "code", "text", "forum"]
 }
 ```
 
@@ -239,6 +240,102 @@ POST /analyze/batch
 }
 ```
 
+### 6. 论坛数据分析
+```
+POST /analyze/forum
+```
+
+**请求格式**:
+```json
+{
+  "forum_data": {
+    "url": "论坛URL",
+    "timestamp": "时间戳",
+    "topicTitle": "主题标题",
+    "totalPosts": 帖子总数,
+    "posts": [
+      {
+        "postId": "帖子ID",
+        "username": "用户名",
+        "time": "发帖时间",
+        "content": {
+          "text": "帖子文本内容",
+          "images": ["图片URL列表"],
+          "codeBlocks": ["代码块列表"],
+          "links": [
+            {
+              "text": "链接文本",
+              "href": "链接URL"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+**请求示例**:
+```json
+{
+  "forum_data": {
+    "url": "https://linux.do/t/topic/802519",
+    "timestamp": "2025-07-22T14:14:27.271Z",
+    "topicTitle": "大门敞开！上海 123 座地铁站实现"闸机常开门"，刷卡扫码秒通过",
+    "totalPosts": 20,
+    "posts": [
+      {
+        "postId": "post_1",
+        "username": "雪梨纽西兰希思露甘奶迪",
+        "time": "2 天",
+        "content": {
+          "text": "据"浦东发布"官方消息，为进一步提高车站闸机的客流通行能力...",
+          "images": [
+            "https://linux.do/uploads/default/optimized/4X/2/c/0/2c09593c55f2b25dfffb3053001d84046c82d57f_2_529x499.jpeg"
+          ],
+          "codeBlocks": [],
+          "links": [
+            {
+              "text": "756×714 108 KB",
+              "href": "https://linux.do/uploads/default/original/4X/2/c/0/2c09593c55f2b25dfffb3053001d84046c82d57f.jpeg"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+**成功响应示例**:
+```json
+{
+  "success": true,
+  "data": {
+    "input": {
+      "content_type": "forum",
+      "topic_title": "大门敞开！上海 123 座地铁站实现"闸机常开门"，刷卡扫码秒通过",
+      "total_posts": 20
+    },
+    "analysis": {
+      "summary": "论坛讨论了上海地铁123座车站实施"闸机常开门"模式的情况...",
+      "key_points": [
+        "上海地铁扩大"闸机常开门"试点范围",
+        "新模式提高乘客通行效率",
+        "系统具备防逃票机制",
+        "用户对安全性和流程优化有讨论"
+      ],
+      "discussion_insights": {
+        "main_topics": ["效率提升", "逃票担忧", "安全防控", "流程建议"],
+        "user_sentiment": "积极讨论，关注实际效果",
+        "key_participants": ["雪梨纽西兰希思露甘奶迪", "Crixs", "PHP 码农"]
+      }
+    }
+  },
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
 ## 错误响应格式
 
 所有错误响应都遵循统一格式：
@@ -282,6 +379,11 @@ POST /analyze/batch
    - 生成摘要
    - 识别核心观点
 
+5. **forum**: 论坛数据分析
+   - 分析论坛主题和讨论内容
+   - 识别关键用户和观点
+   - 提取讨论要点和趋势
+
 ## 使用限制
 
 - 批量请求最多支持10个内容
@@ -314,6 +416,14 @@ def analyze_batch(requests_data):
     """批量分析内容"""
     url = f"{BASE_URL}/analyze/batch"
     data = {"requests": requests_data}
+    
+    response = requests.post(url, json=data)
+    return response.json()
+
+def analyze_forum(forum_data):
+    """分析论坛数据"""
+    url = f"{BASE_URL}/analyze/forum"
+    data = {"forum_data": forum_data}
     
     response = requests.post(url, json=data)
     return response.json()
@@ -378,4 +488,28 @@ curl -X POST http://localhost:5000/analyze/batch \
       }
     ]
   }'
-```
+
+# 论坛数据分析
+curl -X POST http://localhost:5000/analyze/forum \
+  -H "Content-Type: application/json" \
+  -d '{
+    "forum_data": {
+      "url": "https://linux.do/t/topic/802519",
+      "timestamp": "2025-07-22T14:14:27.271Z",
+      "topicTitle": "大门敞开！上海 123 座地铁站实现"闸机常开门"，刷卡扫码秒通过",
+      "totalPosts": 20,
+      "posts": [
+        {
+          "postId": "post_1",
+          "username": "雪梨纽西兰希思露甘奶迪",
+          "time": "2 天",
+          "content": {
+            "text": "据"浦东发布"官方消息，为进一步提高车站闸机的客流通行能力...",
+            "images": [],
+            "codeBlocks": [],
+            "links": []
+          }
+        }
+      ]
+    }
+  }'

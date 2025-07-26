@@ -9,9 +9,10 @@ import time
 import threading
 import subprocess
 import sys
+import os
 from pathlib import Path
 
-API_BASE_URL = "http://localhost:8888"
+API_BASE_URL = "http://localhost:9980"
 
 def test_api_endpoints():
     """测试API端点"""
@@ -148,7 +149,7 @@ def start_api_server():
     try:
         # 使用subprocess启动服务器
         process = subprocess.Popen([
-            sys.executable, "api_server.py"
+            sys.executable, os.path.join(os.path.dirname(__file__), "..", "src", "api", "server.py")
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         # 等待一段时间让服务器启动
