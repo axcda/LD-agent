@@ -114,6 +114,16 @@ cp .env.example .env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
+##### 多密钥配置（推荐）
+
+为了防止单个API密钥达到使用限制，您可以配置多个API密钥，系统会在遇到限制时自动切换：
+
+```env
+OPENAI_API_KEYS=your_openai_api_key_1,your_openai_api_key_2,your_openai_api_key_3
+```
+
+系统会按顺序使用这些密钥，并在遇到API限制时自动切换到下一个密钥。
+
 #### 自定义OpenAI基础URL（可选）
 
 如果您需要使用自定义的OpenAI API端点（例如代理服务器），可以配置 `OPENAI_BASE_URL`：

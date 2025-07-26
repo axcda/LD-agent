@@ -177,7 +177,21 @@ def summary_node(state: GraphState) -> Dict[str, Any]:
         logger.debug(f"  🔍 处理结果: {result}")
         if result['confidence'] > 0.5:  # 只包含置信度较高的结果
             all_summaries.append(result['summary'])
-            all_key_points.extend(result['key_points'])
+            
+            # 对于图像分析结果，过滤掉无价值的关键点
+            if result['content_type'] == ContentType.IMAGE:
+                filtered_key_points = []
+                for point in result['key_points']:
+                    # 过滤掉无价值的关键词
+                    if not any(keyword in point.lower() for keyword in [
+                        "资源类型", "二进制数据", "乱码", "无标题", "无附加说明",
+                        "上下文", "可信度", "价值评估", "图片下载", "无法分析"
+                    ]):
+                        filtered_key_points.append(point)
+                all_key_points.extend(filtered_key_points)
+            else:
+                all_key_points.extend(result['key_points'])
+                
             content_types.append(result['content_type'].value)
             logger.debug(f"    ✅ 添加高置信度结果")
         else:
@@ -234,7 +248,22 @@ def summary_node(state: GraphState) -> Dict[str, Any]:
         
         for point in all_key_points:
             cleaned_point = point.strip().lower()
-            if cleaned_point not in seen_points and len(unique_key_points) < 8:
+            # 检查是否已经存在相似的关键点
+            is_duplicate = False
+            for seen_point in seen_points:
+                # 如果两个关键点的相似度很高，则认为是重复的
+                if len(cleaned_point) > 10 and len(seen_point) > 10:
+                    # 对于较长的关键点，使用更宽松的去重策略
+                    if cleaned_point in seen_point or seen_point in cleaned_point:
+                        is_duplicate = True
+                        break
+                else:
+                    # 对于较短的关键点，使用严格的去重策略
+                    if cleaned_point == seen_point:
+                        is_duplicate = True
+                        break
+            
+            if not is_duplicate and len(unique_key_points) < 10:  # 增加关键点数量限制
                 unique_key_points.append(point.strip())
                 seen_points.add(cleaned_point)
                 logger.debug(f"  ✅ 添加关键点: {point.strip()}")

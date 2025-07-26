@@ -1,29 +1,39 @@
 from typing import Dict, Any, List
 import re
+import logging
 from src.config import config
 from src.graph.state import AnalysisResult, ContentType
+
+logger = logging.getLogger(__name__)
 
 
 class ContentAnalyzer:
     """内容分析器基类"""
-    
+
     def __init__(self):
         self.config = config
-    
+
     def analyze_with_openai(self, prompt: str, content: str = None) -> str:
         """使用OpenAI进行分析"""
         try:
             client = self.config.get_openai_client()
-            messages = [{"role": "user", "content": prompt}]
             
+            # 调试日志，记录使用的base_url
+            logger.info(f"--- OpenAI API 调用 ---")
+            logger.info(f"使用 Base URL: {client.base_url}")
+            logger.info(f"模型: gpt-4.1-mini-2025-04-14")
+            logger.info(f"----------------------")
+
+            messages = [{"role": "user", "content": prompt}]
             response = client.chat.completions.create(
-                model="gpt-4.1-2025-04-14",
+                model="gpt-4.1-mini-2025-04-14",
                 messages=messages,
                 max_tokens=self.config.max_tokens,
                 temperature=self.config.temperature
             )
             return response.choices[0].message.content
         except Exception as e:
+            logger.error(f"OpenAI分析失败: {str(e)}", exc_info=True)
             return f"OpenAI分析失败: {str(e)}"
     
     def analyze_with_gemini(self, prompt: str) -> str:
@@ -35,7 +45,7 @@ class ContentAnalyzer:
         except Exception as e:
             return f"Gemini分析失败: {str(e)}"
     
-    def analyze_with_alibaba(self, prompt: str, image_url: str = None) -> str:
+    def analyze_with_alibaba(self, prompt: str, image_data: str = None) -> str:
         """使用阿里百炼进行分析"""
         try:
             import dashscope
@@ -43,14 +53,22 @@ class ContentAnalyzer:
             
             messages = [{'role': 'user', 'content': prompt}]
             
-            if image_url:
-                messages[0]['content'] = [
-                    {'text': prompt},
-                    {'image': image_url}
-                ]
+            if image_data:
+                # 检查是否为base64数据
+                if image_data.startswith("data:image"):
+                    messages[0]['content'] = [
+                        {'text': prompt},
+                        {'image': image_data}  # base64数据
+                    ]
+                else:
+                    # 假设是URL
+                    messages[0]['content'] = [
+                        {'text': prompt},
+                        {'image': image_data}  # URL
+                    ]
             
             response = MultiModalConversation.call(
-                model='qwen-vl-plus',
+                model='Moonshot-Kimi-K2-Instruct',
                 messages=messages
             )
             

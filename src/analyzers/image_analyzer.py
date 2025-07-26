@@ -30,6 +30,9 @@ class ImageAnalyzer(ContentAnalyzer):
         """分析图片内容"""
         print(f"🖼️ 开始分析图片: {image_url}")
         
+        # 首先尝试下载图片
+        image_data = self.download_image(image_url)
+        
         # 创建分析提示
         prompt = f"""
         请分析这张图片：
@@ -45,20 +48,27 @@ class ImageAnalyzer(ContentAnalyzer):
         请详细描述你在图片中看到的内容。
         """
         
-        # 尝试使用阿里百炼分析图片
-        analysis = self.analyze_with_alibaba(prompt, image_url)
+        # 尝试使用阿里百炼分析图片（传递实际图片数据）
+        if not image_data.startswith("图片下载失败"):
+            # 如果图片下载成功，传递base64数据给阿里百炼
+            analysis = self.analyze_with_alibaba(prompt, image_data)
+        else:
+            # 如果下载失败，仍然使用URL进行分析
+            analysis = self.analyze_with_alibaba(prompt, image_url)
         
-        # 如果失败，使用通用分析
+        # 如果阿里百炼失败，提供更好的错误处理
         if "失败" in analysis:
-            analysis = f"图片分析: {image_url}\n" + self.analyze_with_openai(
-                f"请根据URL {image_url} 分析这可能是什么类型的图片内容。"
-            )
+            # 提供更友好的错误信息
+            if image_data.startswith("图片下载失败"):
+                analysis = f"图片分析: {image_url}\n无法下载或访问此图片，可能是因为网络问题或图片不存在。"
+            else:
+                analysis = f"图片分析: {image_url}\n虽然图片已下载，但无法进行详细分析。这可能是一张相关的图片，但需要更多上下文来理解其内容。"
         
         # 提取关键点
         key_points = self._extract_key_points(analysis)
         
         # 评估置信度
-        confidence = 0.7 if "失败" not in analysis else 0.0
+        confidence = 0.7 if "失败" not in analysis else 0.3
         
         return {
             "content_type": ContentType.IMAGE,
