@@ -22,6 +22,7 @@ langgraph-framework/
 ├── pyproject.toml              # 项目配置和依赖管理
 ├── uv.lock                     # 依赖锁定文件
 ├── .env                        # 环境变量配置文件
+├── .env.example                # 环境变量配置示例文件
 ├── .gitignore                  # Git忽略文件
 ├── sample_forum_data.json      # 示例论坛数据
 ├── DIRECTORY_STRUCTURE.md      # 原始项目结构文档
@@ -35,6 +36,7 @@ langgraph-framework/
 │   ├── forum_analysis_demo.py # 论坛分析演示
 │   ├── forum_data_adapter_example.py # 论坛数据适配器示例
 │   ├── graph_logging_demo.py  # Graph日志演示
+│   ├── test_custom_openai_url.py  # 自定义OpenAI URL测试
 │   └── sample_data/           # 示例数据目录
 │       └── sample_forum_data.json
 ├── scripts/                   # 命令行工具脚本
@@ -104,6 +106,24 @@ cp .env.example .env
 # 编辑 .env 文件，添加您的 API 密钥
 ```
 
+#### OpenAI API配置
+
+在 `.env` 文件中配置您的 OpenAI API 密钥：
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+#### 自定义OpenAI基础URL（可选）
+
+如果您需要使用自定义的OpenAI API端点（例如代理服务器），可以配置 `OPENAI_BASE_URL`：
+
+```env
+OPENAI_BASE_URL=https://api.openai.com/v1/responses
+```
+
+默认情况下，使用标准的OpenAI API端点 `https://api.openai.com/v1`。
+
 ## 使用方法
 
 ### 命令行工具
@@ -119,6 +139,9 @@ uv run python examples/forum_analysis_demo.py
 
 # 运行Graph日志演示
 uv run python examples/graph_logging_demo.py
+
+# 测试自定义OpenAI URL配置
+uv run python examples/test_custom_openai_url.py
 ```
 
 #### 论坛数据处理

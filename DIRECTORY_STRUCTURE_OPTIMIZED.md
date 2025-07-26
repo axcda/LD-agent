@@ -8,6 +8,7 @@ langgraph-framework/
 ├── pyproject.toml              # 项目配置和依赖管理
 ├── uv.lock                     # 依赖锁定文件
 ├── .env                        # 环境变量配置文件
+├── .env.example                # 环境变量配置示例文件
 ├── .gitignore                  # Git忽略文件
 ├── sample_forum_data.json      # 示例论坛数据
 ├── DIRECTORY_STRUCTURE.md      # 原始项目结构文档
@@ -21,6 +22,7 @@ langgraph-framework/
 │   ├── forum_analysis_demo.py # 论坛分析演示
 │   ├── forum_data_adapter_example.py # 论坛数据适配器示例
 │   ├── graph_logging_demo.py  # Graph日志演示
+│   ├── test_custom_openai_url.py  # 自定义OpenAI URL测试
 │   └── sample_data/           # 示例数据目录
 │       └── sample_forum_data.json
 ├── scripts/                   # 命令行工具脚本
@@ -138,6 +140,9 @@ uv run python examples/forum_data_adapter_example.py
 
 # 运行Graph日志演示
 uv run python examples/graph_logging_demo.py
+
+# 测试自定义OpenAI URL配置
+uv run python examples/test_custom_openai_url.py
 ```
 
 ### 使用命令行工具
@@ -178,3 +183,4 @@ uv lock
 5. **工具化**: 提供了命令行工具，便于日常使用
 6. **数据适配**: 提供了论坛数据适配器，支持处理用户提供的JSON格式数据
 7. **Graph日志**: 提供了完整的Graph执行过程日志，便于调试和监控
+8. **灵活配置**: 支持自定义OpenAI API端点，适应不同部署环境

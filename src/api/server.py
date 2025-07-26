@@ -26,7 +26,9 @@ from src.config import config
 from src.utils.forum_data_adapter import convert_user_forum_data
 
 # 配置日志
-logging.basicConfig(level=logging.INFO)
+# 从环境变量获取日志级别，默认为INFO
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)

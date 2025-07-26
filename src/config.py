@@ -16,6 +16,9 @@ class Config:
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         if self.openai_api_key:
             openai.api_key = self.openai_api_key
+            
+        # OpenAI基础URL配置
+        self.openai_base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         
         # Google Gemini配置
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
@@ -35,7 +38,7 @@ class Config:
         """获取OpenAI客户端"""
         if not self.openai_api_key:
             raise ValueError("OpenAI API密钥未配置")
-        return openai.OpenAI(api_key=self.openai_api_key)
+        return openai.OpenAI(api_key=self.openai_api_key, base_url=self.openai_base_url)
     
     def get_gemini_model(self, model_name: str = "gemini-1.5-flash"):
         """获取Gemini模型"""
