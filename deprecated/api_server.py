@@ -303,10 +303,10 @@ if __name__ == "__main__":
         print("  POST /analyze         - 单个内容分析") 
         print("  POST /analyze/batch   - 批量内容分析")
         
-        print(f"\n🌐 服务器将在 http://localhost:8888 启动")
+        print(f"\n🌐 服务器将在 http://localhost:9980 启动")
         print("=" * 50)
         
-        app.run(host="0.0.0.0", port=8888, debug=False)
+        app.run(host="0.0.0.0", port=9980, debug=False)
         
     except Exception as e:
         print(f"❌ 启动失败: {str(e)}")

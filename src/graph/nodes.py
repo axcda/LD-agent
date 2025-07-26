@@ -1,8 +1,7 @@
 from typing import Dict, Any, List
-from graph.state import GraphState, AnalysisRequest, AnalysisResult, ContentType
-from analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer
-from forum_analyzer import ForumAnalyzer
-from config import config
+from src.graph.state import GraphState, AnalysisRequest, AnalysisResult, ContentType
+from src.analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer, ForumAnalyzer
+from src.config import config
 
 
 def input_node(state: GraphState) -> Dict[str, Any]:

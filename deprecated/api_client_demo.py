@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional
 class MultiModalAnalysisClient:
     """多模态内容分析API客户端"""
     
-    def __init__(self, base_url: str = "http://localhost:8888"):
+    def __init__(self, base_url: str = "http://localhost:9980"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.session.headers.update({
