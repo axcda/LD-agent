@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Tuple
 from urllib.parse import urlparse
 from src.graph.state import ForumData, ProcessedForumData, ContentType
 from src.analyzers.base import ContentAnalyzer
-from src.analyzers.url_analyzer import URLAnalyzer
+from src.analyzers.urlAnalyzer import URLAnalyzer
 
 
 class ForumDataPreprocessor:
@@ -269,13 +269,13 @@ class ForumAnalyzer(ContentAnalyzer):
             请用简洁明了的语言总结，突出最重要的讨论要点。
             """
             
-            analysis = self.analyze_with_openai(prompt)
+            analysis = self.analyzeWithOpenai(prompt)
             
             if "失败" in analysis:
-                analysis = self.analyze_with_gemini(prompt)
+                analysis = self.analyzeWithGemini(prompt)
             
             # 4. 提取关键点
-            key_points = self._extract_key_points(analysis)
+            key_points = self.extractKeyPoints(analysis)
             
             # 5. 创建媒体分析请求（供后续使用）
             media_requests = self.create_media_analysis_requests(processed_data)

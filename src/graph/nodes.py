@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 from src.graph.state import GraphState, AnalysisRequest, AnalysisResult, ContentType
-from src.analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer, ForumAnalyzer, MCPAnalyzer
+from src.analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer, ForumAnalyzer, MCPAnalyzer, TavilyAnalyzer
 from src.config import config
 import logging
 import os
@@ -86,6 +86,7 @@ def analysis_node(state: GraphState) -> Dict[str, Any]:
     image_analyzer = ImageAnalyzer()
     code_analyzer = CodeAnalyzer()
     mcp_analyzer = MCPAnalyzer()
+    tavily_analyzer = TavilyAnalyzer()
     logger.debug("✅ 分析器初始化完成")
     
     for i, request in enumerate(analysis_requests):
@@ -110,7 +111,59 @@ def analysis_node(state: GraphState) -> Dict[str, Any]:
                 }
                 logger.debug(f"🔧 MCP分析结果: {result}")
             else:
-                logger.info("🔧 MCP分析器不可用，使用传统分析器")
+                logger.info("🔧 MCP分析器不可用，检查是否为搜索请求")
+                # 检查是否是搜索请求
+                if request['content_type'] == ContentType.TEXT and request['content'].startswith("search:"):
+                    logger.info("🔍 检测到搜索请求，使用Tavily分析器")
+                    query = request['content'][7:].strip()  # 移除"search:"前缀
+                    logger.debug(f"🔍 搜索查询: {query}")
+                    
+                    # 执行Tavily搜索
+                    tavily_result = tavily_analyzer.search(query)
+                    logger.debug(f"🔍 Tavily搜索结果: {tavily_result}")
+                    
+                    if tavily_result["success"]:
+                        # 格式化搜索结果
+                        search_content = f"搜索查询: {query}\n\n"
+                        if tavily_result.get("answer"):
+                            search_content += f"答案: {tavily_result['answer']}\n\n"
+                        
+                        search_content += "搜索结果:\n"
+                        for i, result in enumerate(tavily_result["results"], 1):
+                            search_content += f"{i}. {result['title']}\n"
+                            search_content += f"   URL: {result['url']}\n"
+                            search_content += f"   内容: {result['content'][:200]}...\n\n"
+                        
+                        result = {
+                            "content_type": ContentType.TEXT,
+                            "original_content": request['content'],
+                            "analysis": search_content,
+                            "summary": f"搜索查询 '{query}' 的结果摘要",
+                            "key_points": [f"搜索结果 {i}: {r['title']}" for i, r in enumerate(tavily_result["results"], 1)],
+                            "confidence": 0.85,
+                            "metadata": {"analyzer": "tavily", "query": query}
+                        }
+                    else:
+                        # 搜索失败，使用基础文本分析
+                        logger.warning(f"❌ Tavily搜索失败: {tavily_result.get('error', '未知错误')}")
+                        logger.info("📝 使用文本分析器作为备选方案")
+                        analyzer = URLAnalyzer()  # 复用URL分析器的文本分析能力
+                        prompt = f"请分析以下文本内容：\n{request['content']}\n\n请提供总结和关键点。"
+                        logger.debug(f"📝 发送分析请求到OpenAI...")
+                        analysis = analyzer.analyze_with_openai(prompt)
+                        logger.debug(f"📝 文本分析结果: {analysis}")
+                        
+                        result = {
+                            "content_type": ContentType.TEXT,
+                            "original_content": request['content'][:100] + "...",
+                            "analysis": analysis,
+                            "summary": analysis[:200] + "...",
+                            "key_points": analyzer.extractKeyPoints(analysis),
+                            "confidence": 0.7,
+                            "metadata": {"analyzer": "fallback"}
+                        }
+                else:
+                    logger.info("🔧 使用传统分析器")
                 if request['content_type'] == ContentType.URL:
                     logger.info("🌐 使用URL分析器")
                     logger.debug(f"🔗 分析URL: {request['content']}")
@@ -143,7 +196,7 @@ def analysis_node(state: GraphState) -> Dict[str, Any]:
                         "original_content": request['content'][:100] + "...",
                         "analysis": analysis,
                         "summary": analysis[:200] + "...",
-                        "key_points": analyzer._extract_key_points(analysis),
+                        "key_points": analyzer.extractKeyPoints(analysis),
                         "confidence": 0.8
                     }
             
@@ -259,13 +312,13 @@ def summary_node(state: GraphState) -> Dict[str, Any]:
         logger.debug("🔧 创建URL分析器实例...")
         analyzer = URLAnalyzer()  # 复用分析器
         logger.debug("📤 发送请求到OpenAI...")
-        final_summary = analyzer.analyze_with_openai(prompt)
+        final_summary = analyzer.analyzeWithOpenai(prompt)
         logger.debug(f"📥 OpenAI响应: {final_summary[:100]}...")
         
         if "失败" in final_summary:
             logger.info("🔄 OpenAI失败，尝试使用Gemini")
             logger.debug("📤 发送请求到Gemini...")
-            final_summary = analyzer.analyze_with_gemini(prompt)
+            final_summary = analyzer.analyzeWithGemini(prompt)
             logger.debug(f"📥 Gemini响应: {final_summary[:100]}...")
         
         # 精选关键点（去重并限制数量）

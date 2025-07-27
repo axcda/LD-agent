@@ -104,13 +104,13 @@ class CodeAnalyzer(ContentAnalyzer):
         """
         
         # 使用AI分析
-        analysis = self.analyze_with_openai(prompt)
+        analysis = self.analyzeWithOpenai(prompt)
         
         if "失败" in analysis:
-            analysis = self.analyze_with_gemini(prompt)
+            analysis = self.analyzeWithGemini(prompt)
         
         # 提取关键点
-        key_points = self._extract_key_points(analysis)
+        key_points = self.extractKeyPoints(analysis)
         
         # 添加结构化信息到关键点
         key_points.insert(0, f"编程语言: {detected_language}")

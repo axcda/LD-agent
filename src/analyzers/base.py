@@ -14,7 +14,7 @@ class ContentAnalyzer:
     def __init__(self):
         self.config = config
 
-    def analyze_with_openai(self, prompt: str, content: str = None) -> str:
+    def analyzeWithOpenai(self, prompt: str, content: str = None) -> str:
         """使用OpenAI进行分析"""
         try:
             client = self.config.get_openai_client()
@@ -37,7 +37,7 @@ class ContentAnalyzer:
             logger.error(f"OpenAI分析失败: {str(e)}", exc_info=True)
             return f"OpenAI分析失败: {str(e)}"
     
-    def analyze_with_gemini(self, prompt: str) -> str:
+    def analyzeWithGemini(self, prompt: str) -> str:
         """使用Gemini进行分析"""
         try:
             model = self.config.get_gemini_model()
@@ -46,7 +46,7 @@ class ContentAnalyzer:
         except Exception as e:
             return f"Gemini分析失败: {str(e)}"
     
-    def analyze_with_alibaba(self, prompt: str, image_data: str = None) -> str:
+    def analyzeWithAlibaba(self, prompt: str, image_data: str = None) -> str:
         """使用阿里百炼进行分析"""
         try:
             import dashscope
@@ -81,7 +81,7 @@ class ContentAnalyzer:
         except Exception as e:
             return f"阿里百炼分析失败: {str(e)}"
     
-    def _extract_key_points(self, analysis: str) -> List[str]:
+    def extractKeyPoints(self, analysis: str) -> List[str]:
         """从分析结果中提取关键点"""
         key_points = []
         
@@ -106,7 +106,7 @@ class ContentAnalyzer:
          
         return key_points[:10]  # 限制关键点数量
     
-    def analyze_with_smithery_mcp(self, tool_name: str, arguments: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def analyzeWithSmitheryMcp(self, tool_name: str, arguments: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         使用Smithery MCP工具进行分析
         

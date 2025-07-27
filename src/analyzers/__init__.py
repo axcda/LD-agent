@@ -3,11 +3,12 @@ Content analyzers for multimodal analysis
 """
 
 from .base import ContentAnalyzer
-from .url_analyzer import URLAnalyzer
-from .image_analyzer import ImageAnalyzer
-from .code_analyzer import CodeAnalyzer
-from .forum_analyzer import ForumAnalyzer
-from .mcp_analyzer import MCPAnalyzer
+from .urlAnalyzer import URLAnalyzer
+from .imageAnalyzer import ImageAnalyzer
+from .codeAnalyzer import CodeAnalyzer
+from .forumAnalyzer import ForumAnalyzer
+from .mcpAnalyzer import MCPAnalyzer
+from .tavily_analyzer import TavilyAnalyzer
 
 __all__ = [
     'ContentAnalyzer',
@@ -15,5 +16,6 @@ __all__ = [
     'ImageAnalyzer',
     'CodeAnalyzer',
     'ForumAnalyzer',
-    'MCPAnalyzer'
+    'MCPAnalyzer',
+    'TavilyAnalyzer'
 ]

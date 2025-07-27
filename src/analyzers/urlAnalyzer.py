@@ -65,13 +65,13 @@ class URLAnalyzer(ContentAnalyzer):
         """
         
         # 使用AI分析
-        analysis = self.analyze_with_openai(prompt)
+        analysis = self.analyzeWithOpenai(prompt)
         
         if "失败" in analysis:
-            analysis = self.analyze_with_gemini(prompt)
+            analysis = self.analyzeWithGemini(prompt)
         
         # 提取关键点
-        key_points = self._extract_key_points(analysis)
+        key_points = self.extractKeyPoints(analysis)
         
         # 评估置信度
         confidence = 0.8 if "失败" not in analysis else 0.3

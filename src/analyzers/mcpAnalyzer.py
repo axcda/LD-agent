@@ -54,7 +54,7 @@ class MCPAnalyzer(ContentAnalyzer):
         }
         
         # 尝试使用Smithery MCP工具进行分析
-        result = self.analyze_with_smithery_mcp("text-analyzer", arguments)
+        result = self.analyzeWithSmitheryMcp("text-analyzer", arguments)
         
         if result:
             analysis = result.get("analysis", "未提供分析结果")
@@ -63,11 +63,11 @@ class MCPAnalyzer(ContentAnalyzer):
         else:
             # 如果MCP工具不可用，回退到OpenAI分析
             logger.info("MCP工具不可用，回退到OpenAI分析")
-            analysis = self.analyze_with_openai(
+            analysis = self.analyzeWithOpenai(
                 f"请对以下文本内容进行分析：\n\n{content}",
                 content
             )
-            key_points = self._extract_key_points(analysis)
+            key_points = self.extractKeyPoints(analysis)
             metadata = {"fallback": "openai"}
         
         return AnalysisResult(
@@ -87,7 +87,7 @@ class MCPAnalyzer(ContentAnalyzer):
         }
         
         # 尝试使用Smithery MCP工具进行分析
-        result = self.analyze_with_smithery_mcp("code-analyzer", arguments)
+        result = self.analyzeWithSmitheryMcp("code-analyzer", arguments)
         
         if result:
             analysis = result.get("analysis", "未提供分析结果")
@@ -96,11 +96,11 @@ class MCPAnalyzer(ContentAnalyzer):
         else:
             # 如果MCP工具不可用，回退到OpenAI分析
             logger.info("MCP工具不可用，回退到OpenAI分析")
-            analysis = self.analyze_with_openai(
+            analysis = self.analyzeWithOpenai(
                 f"请对以下代码进行分析：\n\n{content}",
                 content
             )
-            key_points = self._extract_key_points(analysis)
+            key_points = self.extractKeyPoints(analysis)
             metadata = {"fallback": "openai"}
         
         return AnalysisResult(
@@ -119,7 +119,7 @@ class MCPAnalyzer(ContentAnalyzer):
         }
         
         # 尝试使用Smithery MCP工具进行分析
-        result = self.analyze_with_smithery_mcp("url-analyzer", arguments)
+        result = self.analyzeWithSmitheryMcp("url-analyzer", arguments)
         
         if result:
             analysis = result.get("analysis", "未提供分析结果")
@@ -128,11 +128,11 @@ class MCPAnalyzer(ContentAnalyzer):
         else:
             # 如果MCP工具不可用，回退到OpenAI分析
             logger.info("MCP工具不可用，回退到OpenAI分析")
-            analysis = self.analyze_with_openai(
+            analysis = self.analyzeWithOpenai(
                 f"请分析以下URL的内容：{content}",
                 content
             )
-            key_points = self._extract_key_points(analysis)
+            key_points = self.extractKeyPoints(analysis)
             metadata = {"fallback": "openai"}
         
         return AnalysisResult(

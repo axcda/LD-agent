@@ -289,6 +289,9 @@ class Config:
         # Smithery MCP配置
         self.smithery_mcp_key = os.getenv("SMITHEREY_MCP_KEY")
         self.smithery_mcp_profile = os.getenv("SMITHEREY_MCP_PROFILE")
+        
+        # Tavily配置
+        self.tavily_api_key = os.getenv("TAVILY_API_KEY")
     
     def get_openai_client(self):
         """获取OpenAI客户端"""

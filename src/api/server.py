@@ -19,11 +19,11 @@ import traceback
 import json
 from datetime import datetime
 
-from src.core.multimodal_agent import run_custom_analysis, create_analysis_request
+from src.core.multimodalAgent import run_custom_analysis, create_analysis_request
 from src.graph.state import ContentType, GraphState
 from src.graph.workflow import compile_multimodal_workflow
 from src.config import config
-from src.utils.forum_data_adapter import convert_user_forum_data
+from src.utils.forumDataAdapter import convert_user_forum_data
 
 # 配置日志
 # 从环境变量获取日志级别，默认为INFO
