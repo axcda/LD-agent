@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 from src.graph.state import GraphState, AnalysisRequest, AnalysisResult, ContentType
-from src.analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer, ForumAnalyzer
+from src.analyzers import URLAnalyzer, ImageAnalyzer, CodeAnalyzer, ForumAnalyzer, MCPAnalyzer
 from src.config import config
 import logging
 import os
@@ -71,12 +71,21 @@ def analysis_node(state: GraphState) -> Dict[str, Any]:
             # 将媒体请求添加到分析队列
             analysis_requests.extend(media_requests)
             logger.debug(f"📋 更新后分析请求数量: {len(analysis_requests)}")
+        
+        # 添加链接分析结果到分析结果中
+        link_analyses = forum_result.get("link_analyses", [])
+        logger.debug(f"🔗 链接分析数量: {len(link_analyses)}")
+        if link_analyses:
+            logger.info(f"🔗 发现 {len(link_analyses)} 个链接分析结果")
+            for link_analysis in link_analyses:
+                analysis_results.append(link_analysis["analysis"])
     
     # 初始化分析器
     logger.debug("🔧 初始化分析器...")
     url_analyzer = URLAnalyzer()
     image_analyzer = ImageAnalyzer()
     code_analyzer = CodeAnalyzer()
+    mcp_analyzer = MCPAnalyzer()
     logger.debug("✅ 分析器初始化完成")
     
     for i, request in enumerate(analysis_requests):
@@ -84,41 +93,59 @@ def analysis_node(state: GraphState) -> Dict[str, Any]:
         logger.debug(f"📝 分析请求详情: {request}")
         
         try:
-            if request['content_type'] == ContentType.URL:
-                logger.info("🌐 使用URL分析器")
-                logger.debug(f"🔗 分析URL: {request['content']}")
-                result = url_analyzer.analyze_url(request['content'])
-                logger.debug(f"🌐 URL分析结果: {result}")
-            elif request['content_type'] == ContentType.IMAGE:
-                logger.info("🖼️ 使用图像分析器")
-                logger.debug(f"🖼️ 分析图像: {request['content']}")
-                result = image_analyzer.analyze_image(request['content'])
-                logger.debug(f"🖼️ 图像分析结果: {result}")
-            elif request['content_type'] == ContentType.CODE:
-                # 从context中获取编程语言信息
-                language = request.get('context', 'Unknown')
-                logger.info(f"💻 使用代码分析器 (语言: {language})")
-                logger.debug(f"💻 分析代码: {request['content']}")
-                result = code_analyzer.analyze_code(request['content'], language)
-                logger.debug(f"💻 代码分析结果: {result}")
-            else:
-                # 文本内容使用基础分析器
-                logger.info("📝 使用文本分析器")
-                logger.debug(f"📝 分析文本: {request['content']}")
-                analyzer = URLAnalyzer()  # 复用URL分析器的文本分析能力
-                prompt = f"请分析以下文本内容：\n{request['content']}\n\n请提供总结和关键点。"
-                logger.debug(f"📝 发送分析请求到OpenAI...")
-                analysis = analyzer.analyze_with_openai(prompt)
-                logger.debug(f"📝 文本分析结果: {analysis}")
-                
+            # 首先尝试使用MCP分析器
+            logger.info("🔧 尝试使用MCP分析器")
+            mcp_result = mcp_analyzer.analyze_content(request['content'], request['content_type'])
+            
+            if mcp_result and mcp_result.get('analysis') != "MCP分析失败: None":
+                logger.info("✅ MCP分析器成功返回结果")
                 result = {
-                    "content_type": ContentType.TEXT,
+                    "content_type": request['content_type'],
                     "original_content": request['content'][:100] + "...",
-                    "analysis": analysis,
-                    "summary": analysis[:200] + "...",
-                    "key_points": analyzer._extract_key_points(analysis),
-                    "confidence": 0.8
+                    "analysis": mcp_result.get('analysis', '无分析结果'),
+                    "summary": mcp_result.get('analysis', '无分析结果')[:200] + "...",
+                    "key_points": mcp_result.get('key_points', []),
+                    "confidence": 0.9,  # MCP分析器置信度更高
+                    "metadata": {**mcp_result.get('metadata', {}), "analyzer": "mcp"}
                 }
+                logger.debug(f"🔧 MCP分析结果: {result}")
+            else:
+                logger.info("🔧 MCP分析器不可用，使用传统分析器")
+                if request['content_type'] == ContentType.URL:
+                    logger.info("🌐 使用URL分析器")
+                    logger.debug(f"🔗 分析URL: {request['content']}")
+                    result = url_analyzer.analyze_url(request['content'])
+                    logger.debug(f"🌐 URL分析结果: {result}")
+                elif request['content_type'] == ContentType.IMAGE:
+                    logger.info("🖼️ 使用图像分析器")
+                    logger.debug(f"🖼️ 分析图像: {request['content']}")
+                    result = image_analyzer.analyze_image(request['content'])
+                    logger.debug(f"🖼️ 图像分析结果: {result}")
+                elif request['content_type'] == ContentType.CODE:
+                    # 从context中获取编程语言信息
+                    language = request.get('context', 'Unknown')
+                    logger.info(f"💻 使用代码分析器 (语言: {language})")
+                    logger.debug(f"💻 分析代码: {request['content']}")
+                    result = code_analyzer.analyze_code(request['content'], language)
+                    logger.debug(f"💻 代码分析结果: {result}")
+                else:
+                    # 文本内容使用基础分析器
+                    logger.info("📝 使用文本分析器")
+                    logger.debug(f"📝 分析文本: {request['content']}")
+                    analyzer = URLAnalyzer()  # 复用URL分析器的文本分析能力
+                    prompt = f"请分析以下文本内容：\n{request['content']}\n\n请提供总结和关键点。"
+                    logger.debug(f"📝 发送分析请求到OpenAI...")
+                    analysis = analyzer.analyze_with_openai(prompt)
+                    logger.debug(f"📝 文本分析结果: {analysis}")
+                    
+                    result = {
+                        "content_type": ContentType.TEXT,
+                        "original_content": request['content'][:100] + "...",
+                        "analysis": analysis,
+                        "summary": analysis[:200] + "...",
+                        "key_points": analyzer._extract_key_points(analysis),
+                        "confidence": 0.8
+                    }
             
             analysis_results.append(result)
             logger.info(f"✅ 分析完成，置信度: {result['confidence']}")

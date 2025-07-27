@@ -6,10 +6,12 @@
 """
 
 import re
+import requests
 from typing import Dict, Any, List, Tuple
 from urllib.parse import urlparse
 from src.graph.state import ForumData, ProcessedForumData, ContentType
 from src.analyzers.base import ContentAnalyzer
+from src.analyzers.url_analyzer import URLAnalyzer
 
 
 class ForumDataPreprocessor:
@@ -131,6 +133,7 @@ class ForumAnalyzer(ContentAnalyzer):
     def __init__(self):
         super().__init__()
         self.preprocessor = ForumDataPreprocessor()
+        self.url_analyzer = URLAnalyzer()
     
     def create_analysis_content(self, processed_data: ProcessedForumData) -> str:
         """创建用于分析的综合内容"""
@@ -170,6 +173,22 @@ class ForumAnalyzer(ContentAnalyzer):
                 content += f"  ... 还有{len(summary['all_images'])-3}张图片\n"
         
         return content
+    
+    def analyze_link_content(self, url: str) -> Dict[str, Any]:
+        """分析链接内容 - 联网搜索功能"""
+        try:
+            # 使用URL分析器获取网页内容
+            result = self.url_analyzer.analyze_url(url)
+            return result
+        except Exception as e:
+            return {
+                "content_type": ContentType.URL,
+                "original_content": url,
+                "analysis": f"链接分析失败: {str(e)}",
+                "summary": "无法分析链接内容",
+                "key_points": [],
+                "confidence": 0.0
+            }
     
     def create_media_analysis_requests(self, processed_data: ProcessedForumData) -> List[Dict[str, Any]]:
         """创建媒体内容分析请求"""
@@ -261,6 +280,16 @@ class ForumAnalyzer(ContentAnalyzer):
             # 5. 创建媒体分析请求（供后续使用）
             media_requests = self.create_media_analysis_requests(processed_data)
             
+            # 6. 对重要链接进行联网搜索分析
+            link_analyses = []
+            for i, link in enumerate(processed_data["content_summary"]["all_links"][:3]):  # 分析前3个链接
+                if self._is_valid_url(link):
+                    link_analysis = self.analyze_link_content(link)
+                    link_analyses.append({
+                        "url": link,
+                        "analysis": link_analysis
+                    })
+            
             return {
                 "content_type": ContentType.FORUM,
                 "original_content": f"论坛主题: {processed_data['topic_info']['title']}",
@@ -270,6 +299,7 @@ class ForumAnalyzer(ContentAnalyzer):
                 "confidence": 0.9 if "失败" not in analysis else 0.3,
                 "processed_data": processed_data,
                 "media_requests": media_requests,
+                "link_analyses": link_analyses,  # 添加链接分析结果
                 "metadata": {
                     "total_posts": processed_data['content_summary']['post_count'],
                     "users_count": len(processed_data['content_summary']['key_users']),
@@ -288,6 +318,7 @@ class ForumAnalyzer(ContentAnalyzer):
                 "confidence": 0.0,
                 "processed_data": None,
                 "media_requests": [],
+                "link_analyses": [],  # 添加链接分析结果
                 "metadata": {"error": str(e)}
             }
     

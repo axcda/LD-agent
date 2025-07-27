@@ -1,8 +1,9 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import re
 import logging
 from src.config import config
 from src.graph.state import AnalysisResult, ContentType
+from src.utils import run_smithery_tool
 
 logger = logging.getLogger(__name__)
 
@@ -102,5 +103,28 @@ class ContentAnalyzer:
                 sentence = sentence.strip()
                 if len(sentence) > 20:
                     key_points.append(sentence)
-        
+         
         return key_points[:10]  # 限制关键点数量
+    
+    def analyze_with_smithery_mcp(self, tool_name: str, arguments: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        使用Smithery MCP工具进行分析
+        
+        Args:
+            tool_name: 工具名称
+            arguments: 工具参数
+            
+        Returns:
+            工具执行结果，如果工具不可用则返回None
+        """
+        try:
+            result = run_smithery_tool(tool_name, arguments)
+            if result:
+                logger.info(f"Smithery MCP工具 '{tool_name}' 执行成功")
+                return result
+            else:
+                logger.warning(f"Smithery MCP工具 '{tool_name}' 不可用或执行失败")
+                return None
+        except Exception as e:
+            logger.error(f"Smithery MCP工具执行失败: {str(e)}", exc_info=True)
+            return None

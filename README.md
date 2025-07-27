@@ -9,6 +9,7 @@ LangGraph 多模态内容分析框架是一个基于 LangGraph 的高级内容�
 - **多模态内容分析**：支持 URL、图像、代码和文本内容的分析
 - **论坛数据分析**：专门针对论坛数据的分析和处理
 - **数据格式适配**：提供数据适配器，支持处理用户提供的 JSON 格式数据
+- **MCP工具集成**：集成Smithery MCP工具，扩展分析能力
 - **模块化设计**：清晰的模块划分，便于扩展和维护
 - **API 接口**：提供 RESTful API 接口，便于集成到其他系统
 - **命令行工具**：提供命令行工具，便于日常使用
@@ -30,13 +31,15 @@ langgraph-framework/
 ├── docs/                       # 文档目录
 │   ├── API_DOCS.md            # API文档
 │   ├── QUICK_START.md         # 快速开始指南
-│   └── FORUM_DATA_ADAPTER.md  # 论坛数据适配器使用指南
+│   ├── FORUM_DATA_ADAPTER.md  # 论坛数据适配器使用指南
+│   └── MCP_INTEGRATION.md     # MCP工具集成指南
 ├── examples/                  # 示例代码目录
 │   ├── basic_usage.py         # 基础使用示例
 │   ├── forum_analysis_demo.py # 论坛分析演示
 │   ├── forum_data_adapter_example.py # 论坛数据适配器示例
 │   ├── graph_logging_demo.py  # Graph日志演示
 │   ├── test_custom_openai_url.py  # 自定义OpenAI URL测试
+│   ├── mcp_analysis_demo.py   # MCP分析演示
 │   └── sample_data/           # 示例数据目录
 │       └── sample_forum_data.json
 ├── scripts/                   # 命令行工具脚本
@@ -53,7 +56,8 @@ langgraph-framework/
 │   │   ├── forum_analyzer.py # 论坛分析器
 │   │   ├── url_analyzer.py   # URL分析器
 │   │   ├── image_analyzer.py # 图像分析器
-│   │   └── code_analyzer.py  # 代码分析器
+│   │   ├── code_analyzer.py  # 代码分析器
+│   │   └── mcp_analyzer.py   # MCP分析器
 │   ├── api/                  # API相关模块
 │   │   ├── __init__.py
 │   │   ├── server.py         # API服务器
@@ -152,6 +156,13 @@ uv run python examples/graph_logging_demo.py
 
 # 测试自定义OpenAI URL配置
 uv run python examples/test_custom_openai_url.py
+
+#### MCP工具使用
+
+```bash
+# 运行MCP分析演示
+uv run python examples/mcp_analysis_demo.py
+```
 ```
 
 #### 论坛数据处理
@@ -212,6 +223,7 @@ uv run python -m tests.test_user_data_processing
 - [快速开始指南](docs/QUICK_START.md)
 - [API 文档](docs/API_DOCS.md)
 - [论坛数据适配器使用指南](docs/FORUM_DATA_ADAPTER.md)
+- [MCP工具集成指南](docs/MCP_INTEGRATION.md)
 - [优化后的项目结构](DIRECTORY_STRUCTURE_OPTIMIZED.md)
 
 ## 贡献

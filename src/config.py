@@ -285,6 +285,10 @@ class Config:
         
         self.max_tokens = int(os.getenv("MAX_TOKENS", 32768))
         self.temperature = float(os.getenv("TEMPERATURE", 0.7))
+        
+        # Smithery MCP配置
+        self.smithery_mcp_key = os.getenv("SMITHEREY_MCP_KEY")
+        self.smithery_mcp_profile = os.getenv("SMITHEREY_MCP_PROFILE")
     
     def get_openai_client(self):
         """获取OpenAI客户端"""
@@ -306,12 +310,23 @@ class Config:
             raise ValueError("Google API密钥未配置")
         return genai.GenerativeModel(model_name)
     
+    def get_smithery_mcp_config(self):
+        """获取Smithery MCP配置"""
+        if not self.smithery_mcp_key or not self.smithery_mcp_profile:
+            return None
+        
+        return {
+            "key": self.smithery_mcp_key,
+            "profile": self.smithery_mcp_profile
+        }
+    
     def validate_config(self) -> dict:
         """验证配置"""
         status = {
             "openai": bool(self.openai_api_keys),
             "gemini": bool(self.google_api_key),
-            "alibaba": bool(self.alibaba_api_key)
+            "alibaba": bool(self.alibaba_api_key),
+            "smithery_mcp": bool(self.smithery_mcp_key and self.smithery_mcp_profile)
         }
         return status
 
